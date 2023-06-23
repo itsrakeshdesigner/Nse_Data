@@ -1,111 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>NSE FNO Bhavcopy</title>
-  <style>
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-    th, td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-    .loading {
-      display: none;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-    .status-message {
-      margin-top: 10px;
-      font-weight: bold;
-    }
-  </style>
-  <script>
-    function fetchData() {
-      var selectedDate = document.getElementById('date').value;
-      var url = `https://www.nseindia.com/content/historical/DERIVATIVES/yyyy/mmm/foddmmyyyybhav.csv`
-        .replace('yyyy', selectedDate.substring(0, 4))
-        .replace('mm', selectedDate.substring(5, 7))
-        .replace('dd', selectedDate.substring(8, 10));
-
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', url, true);
-      xhr.setRequestHeader('Content-Type', 'text/plain');
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            var data = xhr.responseText;
-            // Process and display the data
-            displayData(data);
-            showStatusMessage('Data fetched successfully!', true);
-          } else {
-            showStatusMessage('Error fetching data.', false);
-          }
-          hideLoadingIndicator();
+    <title>NSE EOD Bhavcopy</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container {
+            margin-top: 50px;
         }
-      };
-
-      showLoadingIndicator();
-      xhr.send();
-    }
-
-    function displayData(data) {
-      var lines = data.split('\n');
-      var table = document.createElement('table');
-
-      // Create header row
-      var headerRow = document.createElement('tr');
-      var headers = lines[0].split(',');
-      for (var i = 0; i < headers.length; i++) {
-        var headerCell = document.createElement('th');
-        headerCell.textContent = headers[i];
-        headerRow.appendChild(headerCell);
-      }
-      table.appendChild(headerRow);
-
-      // Create data rows
-      for (var j = 1; j < lines.length; j++) {
-        var dataRow = document.createElement('tr');
-        var cells = lines[j].split(',');
-        for (var k = 0; k < cells.length; k++) {
-          var dataCell = document.createElement('td');
-          dataCell.textContent = cells[k];
-          dataRow.appendChild(dataCell);
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
-        table.appendChild(dataRow);
-      }
-
-      // Replace existing data container with the table
-      var dataContainer = document.getElementById('dataContainer');
-      dataContainer.innerHTML = '';
-      dataContainer.appendChild(table);
-    }
-
-    function showLoadingIndicator() {
-      document.getElementById('loadingIndicator').style.display = 'block';
-    }
-
-    function hideLoadingIndicator() {
-      document.getElementById('loadingIndicator').style.display = 'none';
-    }
-
-    function showStatusMessage(message, isSuccess) {
-      var statusMessage = document.getElementById('statusMessage');
-      statusMessage.textContent = message;
-      statusMessage.style.color = isSuccess ? 'green' : 'red';
-      statusMessage.style.display = 'block';
-    }
-  </script>
+        
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .date-select {
+            margin-bottom: 20px;
+        }
+        
+        .btn-fetch {
+            margin-left: 10px;
+        }
+    </style>
 </head>
 <body>
-  <h1>NSE FNO Bhavcopy</h1>
-  <label for="date">Select Date:</label>
-  <input type="date" id="date" name="date">
-  <button onclick="fetchData()">Fetch Data</button>
-  <div id="loadingIndicator" class="loading">Fetching data...</div>
-  <div id="statusMessage" class="status-message"></div>
-  <div id="dataContainer"></div>
-</body>
-</html>
+    <div class="container">
+        <h2>NSE EOD Bhavcopy</h2>
+        <div class="date-select">
+            <label for="date-picker">Select Date:</label>
+            <input type="date" id="date-picker" class="form-control">
+            <button id="fetch-data-btn" class="btn btn-primary btn-fetch">Fetch Data</button>
+        </div>
+        <table id="bhavcopy-table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Company</th>
+                    <th>Open</th>
+                    <th>High</th>
+                    <th>Low</th>
+                    <th>Close</th>
+                </tr>
+            </thead>
+            <tbody id="bhavcopy-body">
+                <!-- Bhavcopy data will be populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Function to fetch Bhavcopy data
+        function fetchBhavcopyData(date) {
+            const formattedDate = formatDate(date);
+            const url = `https://www1.nseindia.com/archives/equities/bhavcopy/pr/PR${formattedDate}.csv`;
+
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    // Split CSV data into rows
+                    const rows = data.split('\n');
+
+                    // Remove header row
+                    rows.shift();
+
+                    // Clear existing data in the table body
+                    const bhavcopyBody = document.getElementById('bhavcopy-body');
+                    bhavcopyBody.innerHTML = '';
+
+                    // Populate the table with Bhavcopy data
+                    rows.forEach(row => {
+                        const columns = row.split(',');
+                        if (columns.length === 7) {
+                            const symbol = columns[0].trim();
+                            const company = columns[1].trim();
+                            const open = columns[2].trim();
+                            const high = columns[3].trim();
+                            const low = columns[4].trim();
+                            const close = columns[5].trim();
+
+                            const newRow = document.createElement('tr');
+                            newRow.innerHTML = `
+                                <td>${symbol}</td>
+                                <td>${company}</td>
+                                <td>${open}</td>
+                                <td>${high}</td>
+                                <td>${low}</td>
+                                <td>${close}</td>
+                            `;
+                            bhavcopyBody.appendChild(newRow);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Function to format date as DDMM
