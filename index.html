@@ -1,108 +1,145 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>NSE EOD Bhavcopy</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .container {
-            margin-top: 50px;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        th {
-            background-color: #f2f2f2;
-        }
-        
-        .date-select {
-            margin-bottom: 20px;
-        }
-        
-        .btn-fetch {
-            margin-left: 10px;
-        }
-    </style>
+  <title>Derivatives Bhavcopy Fetcher</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .filterContainer {
+      margin-bottom: 20px;
+    }
+
+    .filterInput {
+      padding: 8px;
+      margin-right: 10px;
+    }
+
+    .filterSelect {
+      padding: 8px;
+      margin-right: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      cursor: pointer;
+      transition-duration: 0.4s;
+      border-radius: 4px;
+    }
+
+    .button:hover {
+      background-color: #45a049;
+    }
+  </style>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#fetchButton').click(function() {
+        var url = 'https://www.nseindia.com/api/historical/fo/derivatives?&expiryDate={expiry_date}';
+
+        // Specify the expiry date for which you want to fetch the bhavcopy data
+        var expiryDate = '2023-06-22';
+
+        var headers = {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0;Win64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3',
+          'Referer': 'https://www.nseindia.com'
+        };
+
+        $.ajax({
+          url: url.replace('{expiry_date}', expiryDate),
+          type: 'GET',
+          headers: headers,
+          success: function(response) {
+            // Process the bhavcopy data as per your requirements
+            var tableBody = $('#dataTable tbody');
+            tableBody.empty();
+
+            // Parse the response and populate the table with data
+            if (response.records) {
+              response.records.forEach(function(record) {
+                var rowData = '<tr>' +
+                  '<td>' + record.column1 + '</td>' +
+                  '<td>' + record.column2 + '</td>' +
+                  '<td>' + record.column3 + '</td>' +
+                  '</tr>';
+                tableBody.append(rowData);
+              });
+            }
+
+            $('#dataTable').show();
+            $('.filterContainer').show();
+
+            alert('Bhavcopy data fetched successfully!');
+          },
+          error: function(error) {
+            console.log(error);
+            alert('Error occurred while fetching the bhavcopy data.');
+          }
+        });
+      });
+    });
+  </script>
 </head>
 <body>
-    <div class="container">
-        <h2>NSE EOD Bhavcopy</h2>
-        <div class="date-select">
-            <label for="date-picker">Select Date:</label>
-            <input type="date" id="date-picker" class="form-control">
-            <button id="fetch-data-btn" class="btn btn-primary btn-fetch">Fetch Data</button>
-        </div>
-        <table id="bhavcopy-table" class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Symbol</th>
-                    <th>Company</th>
-                    <th>Open</th>
-                    <th>High</th>
-                    <th>Low</th>
-                    <th>Close</th>
-                </tr>
-            </thead>
-            <tbody id="bhavcopy-body">
-                <!-- Bhavcopy data will be populated here -->
-            </tbody>
-        </table>
+  <div class="container">
+    <h1>Derivatives Bhavcopy Fetcher</h1>
+    <button class="button" id="fetchButton">Fetch Bhavcopy Data</button>
+
+    <div class="filterContainer" style="display: none;">
+      <input type="text" class="filterInput" data-column="column1" placeholder="Filter Column 1">
+      <select class="filterSelect" data-column="column2">
+        <option value="gt">Greater Than</option>
+        <option value="lt">Less Than</option>
+        <option value="eq">Equal To</option>
+      </select>
+      <!-- Add more filter elements as needed -->
     </div>
 
-    <script>
-        // Function to fetch Bhavcopy data
-        function fetchBhavcopyData(date) {
-            const formattedDate = formatDate(date);
-            const url = `https://www1.nseindia.com/archives/equities/bhavcopy/pr/PR${formattedDate}.csv`;
-
-            fetch(url)
-                .then(response => response.text())
-                .then(data => {
-                    // Split CSV data into rows
-                    const rows = data.split('\n');
-
-                    // Remove header row
-                    rows.shift();
-
-                    // Clear existing data in the table body
-                    const bhavcopyBody = document.getElementById('bhavcopy-body');
-                    bhavcopyBody.innerHTML = '';
-
-                    // Populate the table with Bhavcopy data
-                    rows.forEach(row => {
-                        const columns = row.split(',');
-                        if (columns.length === 7) {
-                            const symbol = columns[0].trim();
-                            const company = columns[1].trim();
-                            const open = columns[2].trim();
-                            const high = columns[3].trim();
-                            const low = columns[4].trim();
-                            const close = columns[5].trim();
-
-                            const newRow = document.createElement('tr');
-                            newRow.innerHTML = `
-                                <td>${symbol}</td>
-                                <td>${company}</td>
-                                <td>${open}</td>
-                                <td>${high}</td>
-                                <td>${low}</td>
-                                <td>${close}</td>
-                            `;
-                            bhavcopyBody.appendChild(newRow);
-                        }
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
-
-        // Function to format date as DDMM
+    <table id="dataTable" style="display: none;">
+      <thead>
+        <tr>
+          <th>Column 1</th>
+          <th>Column 2</th>
+          <th>Column 3</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Table data rows will be populated dynamically -->
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
