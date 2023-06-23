@@ -2,6 +2,17 @@
 <html>
 <head>
   <title>NSE FNO Bhavcopy</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+  </style>
   <script>
     function fetchData() {
       var selectedDate = document.getElementById('date').value;
@@ -13,10 +24,42 @@
         if (xhr.readyState === 4 && xhr.status === 200) {
           var data = xhr.responseText;
           // Process and display the data
-          document.getElementById('dataContainer').textContent = data;
+          displayData(data);
         }
       };
       xhr.send();
+    }
+    
+    function displayData(data) {
+      var lines = data.split('\n');
+      var table = document.createElement('table');
+      
+      // Create header row
+      var headerRow = document.createElement('tr');
+      var headers = lines[0].split(',');
+      for (var i = 0; i < headers.length; i++) {
+        var headerCell = document.createElement('th');
+        headerCell.textContent = headers[i];
+        headerRow.appendChild(headerCell);
+      }
+      table.appendChild(headerRow);
+      
+      // Create data rows
+      for (var j = 1; j < lines.length; j++) {
+        var dataRow = document.createElement('tr');
+        var cells = lines[j].split(',');
+        for (var k = 0; k < cells.length; k++) {
+          var dataCell = document.createElement('td');
+          dataCell.textContent = cells[k];
+          dataRow.appendChild(dataCell);
+        }
+        table.appendChild(dataRow);
+      }
+      
+      // Replace existing data container with the table
+      var dataContainer = document.getElementById('dataContainer');
+      dataContainer.innerHTML = '';
+      dataContainer.appendChild(table);
     }
   </script>
 </head>
