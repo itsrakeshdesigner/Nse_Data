@@ -21,38 +21,44 @@
       margin-top: 10px;
       font-weight: bold;
     }
+    .data-container {
+      margin-top: 20px;
+    }
   </style>
   <script>
     function fetchData() {
       var selectedDate = document.getElementById('date').value;
-      var url = 'fetchdata.php?date=' + selectedDate;
-      
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', url, true);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            var data = xhr.responseText;
-            // Process and display the data
-            displayData(data);
-            showStatusMessage('Data fetched successfully!', true);
-          } else {
-            showStatusMessage('Error fetching data.', false);
-          }
-          hideLoadingIndicator();
-        }
-      };
-      
+      var url = 'https://www.nseindia.com/content/historical/DERIVATIVES/yyyy/mmm/foddmmyyyybhav.csv'
+        .replace('yyyy', selectedDate.substring(0, 4))
+        .replace('mm', selectedDate.substring(5, 7))
+        .replace('dd', selectedDate.substring(8, 10));
+
+      var script = document.createElement('script');
+      script.src = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&callback=processData';
+      document.body.appendChild(script);
+
       showLoadingIndicator();
-      xhr.send();
     }
-    
+
+    function processData(data) {
+      if (data) {
+        // Process and display the data
+        displayData(data.contents);
+        showStatusMessage('Data fetched successfully!', true);
+      } else {
+        showStatusMessage('Error fetching data.', false);
+      }
+      hideLoadingIndicator();
+    }
+
     function displayData(data) {
       var lines = data.split('\n');
       var table = document.createElement('table');
-      
+      table.classList.add('data-table');
+
       // Create header row
       var headerRow = document.createElement('tr');
+      headerRow.classList.add('header-row');
       var headers = lines[0].split(',');
       for (var i = 0; i < headers.length; i++) {
         var headerCell = document.createElement('th');
@@ -60,10 +66,11 @@
         headerRow.appendChild(headerCell);
       }
       table.appendChild(headerRow);
-      
+
       // Create data rows
       for (var j = 1; j < lines.length; j++) {
         var dataRow = document.createElement('tr');
+        dataRow.classList.add('data-row');
         var cells = lines[j].split(',');
         for (var k = 0; k < cells.length; k++) {
           var dataCell = document.createElement('td');
@@ -72,21 +79,21 @@
         }
         table.appendChild(dataRow);
       }
-      
+
       // Replace existing data container with the table
       var dataContainer = document.getElementById('dataContainer');
       dataContainer.innerHTML = '';
       dataContainer.appendChild(table);
     }
-    
+
     function showLoadingIndicator() {
       document.getElementById('loadingIndicator').style.display = 'block';
     }
-    
+
     function hideLoadingIndicator() {
       document.getElementById('loadingIndicator').style.display = 'none';
     }
-    
+
     function showStatusMessage(message, isSuccess) {
       var statusMessage = document.getElementById('statusMessage');
       statusMessage.textContent = message;
@@ -102,6 +109,6 @@
   <button onclick="fetchData()">Fetch Data</button>
   <div id="loadingIndicator" class="loading">Fetching data...</div>
   <div id="statusMessage" class="status-message"></div>
-  <div id="dataContainer"></div>
+  <div id="dataContainer" class="data-container"></div>
 </body>
 </html>
