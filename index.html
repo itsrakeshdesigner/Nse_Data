@@ -33,22 +33,25 @@
         .replace('mm', selectedDate.substring(5, 7))
         .replace('dd', selectedDate.substring(8, 10));
 
-      var script = document.createElement('script');
-      script.src = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&callback=processData';
-      document.body.appendChild(script);
+      var corsUrl = 'https://cors-anywhere.herokuapp.com/' + url;
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', corsUrl, true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            var data = xhr.responseText;
+            // Process and display the data
+            displayData(data);
+            showStatusMessage('Data fetched successfully!', true);
+          } else {
+            showStatusMessage('Error fetching data.', false);
+          }
+          hideLoadingIndicator();
+        }
+      };
 
       showLoadingIndicator();
-    }
-
-    function processData(data) {
-      if (data) {
-        // Process and display the data
-        displayData(data.contents);
-        showStatusMessage('Data fetched successfully!', true);
-      } else {
-        showStatusMessage('Error fetching data.', false);
-      }
-      hideLoadingIndicator();
+      xhr.send();
     }
 
     function displayData(data) {
