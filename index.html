@@ -1,108 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>NSE EOD Bhavcopy</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        .container {
-            margin-top: 50px;
+  <title>NSE FNO Bhavcopy</title>
+  <script>
+    function fetchData() {
+      var selectedDate = document.getElementById('date').value;
+      var url = 'https://www.nseindia.com/content/historical/DERIVATIVES/yyyy/mmm/foddmmyyyybhav.csv'.replace('yyyy', selectedDate.substring(0, 4)).replace('mm', selectedDate.substring(5, 7)).replace('dd', selectedDate.substring(8, 10));
+      
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var data = xhr.responseText;
+          // Process and display the data
+          document.getElementById('dataContainer').textContent = data;
         }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        th {
-            background-color: #f2f2f2;
-        }
-        
-        .date-select {
-            margin-bottom: 20px;
-        }
-        
-        .btn-fetch {
-            margin-left: 10px;
-        }
-    </style>
+      };
+      xhr.send();
+    }
+  </script>
 </head>
 <body>
-    <div class="container">
-        <h2>NSE EOD Bhavcopy</h2>
-        <div class="date-select">
-            <label for="date-picker">Select Date:</label>
-            <input type="date" id="date-picker" class="form-control">
-            <button id="fetch-data-btn" class="btn btn-primary btn-fetch">Fetch Data</button>
-        </div>
-        <table id="bhavcopy-table" class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Symbol</th>
-                    <th>Company</th>
-                    <th>Open</th>
-                    <th>High</th>
-                    <th>Low</th>
-                    <th>Close</th>
-                </tr>
-            </thead>
-            <tbody id="bhavcopy-body">
-                <!-- Bhavcopy data will be populated here -->
-            </tbody>
-        </table>
-    </div>
-
-    <script>
-        // Function to fetch Bhavcopy data
-        function fetchBhavcopyData(date) {
-            const formattedDate = formatDate(date);
-            const url = `https://www1.nseindia.com/archives/equities/bhavcopy/pr/PR${formattedDate}.csv`;
-
-            fetch(url)
-                .then(response => response.text())
-                .then(data => {
-                    // Split CSV data into rows
-                    const rows = data.split('\n');
-
-                    // Remove header row
-                    rows.shift();
-
-                    // Clear existing data in the table body
-                    const bhavcopyBody = document.getElementById('bhavcopy-body');
-                    bhavcopyBody.innerHTML = '';
-
-                    // Populate the table with Bhavcopy data
-                    rows.forEach(row => {
-                        const columns = row.split(',');
-                        if (columns.length === 7) {
-                            const symbol = columns[0].trim();
-                            const company = columns[1].trim();
-                            const open = columns[2].trim();
-                            const high = columns[3].trim();
-                            const low = columns[4].trim();
-                            const close = columns[5].trim();
-
-                            const newRow = document.createElement('tr');
-                            newRow.innerHTML = `
-                                <td>${symbol}</td>
-                                <td>${company}</td>
-                                <td>${open}</td>
-                                <td>${high}</td>
-                                <td>${low}</td>
-                                <td>${close}</td>
-                            `;
-                            bhavcopyBody.appendChild(newRow);
-                        }
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
-
-        // Function to format date as DDMM
+  <h1>NSE FNO Bhavcopy</h1>
+  <label for="date">Select Date:</label>
+  <input type="date" id="date" name="date">
+  <button onclick="fetchData()">Fetch Data</button>
+  <div id="dataContainer"></div>
+</body>
+</html>
