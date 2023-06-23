@@ -12,6 +12,15 @@
       text-align: left;
       border-bottom: 1px solid #ddd;
     }
+    .loading {
+      display: none;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .status-message {
+      margin-top: 10px;
+      font-weight: bold;
+    }
   </style>
   <script>
     function fetchData() {
@@ -21,12 +30,20 @@
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
       xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          var data = xhr.responseText;
-          // Process and display the data
-          displayData(data);
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            var data = xhr.responseText;
+            // Process and display the data
+            displayData(data);
+            showStatusMessage('Data fetched successfully!', true);
+          } else {
+            showStatusMessage('Error fetching data.', false);
+          }
+          hideLoadingIndicator();
         }
       };
+      
+      showLoadingIndicator();
       xhr.send();
     }
     
@@ -61,6 +78,21 @@
       dataContainer.innerHTML = '';
       dataContainer.appendChild(table);
     }
+    
+    function showLoadingIndicator() {
+      document.getElementById('loadingIndicator').style.display = 'block';
+    }
+    
+    function hideLoadingIndicator() {
+      document.getElementById('loadingIndicator').style.display = 'none';
+    }
+    
+    function showStatusMessage(message, isSuccess) {
+      var statusMessage = document.getElementById('statusMessage');
+      statusMessage.textContent = message;
+      statusMessage.style.color = isSuccess ? 'green' : 'red';
+      statusMessage.style.display = 'block';
+    }
   </script>
 </head>
 <body>
@@ -68,6 +100,8 @@
   <label for="date">Select Date:</label>
   <input type="date" id="date" name="date">
   <button onclick="fetchData()">Fetch Data</button>
+  <div id="loadingIndicator" class="loading">Fetching data...</div>
+  <div id="statusMessage" class="status-message"></div>
   <div id="dataContainer"></div>
 </body>
 </html>
